@@ -1,6 +1,6 @@
 const API_BASE = window.location.origin.includes('localhost')
     ? 'http://localhost:5000/api'
-    : '/api';
+    : 'https://voyage-premium.onrender.com/api';
 
 function getToken(){
     return localStorage.getItem('vp_token');
