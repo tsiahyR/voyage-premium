@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Voyage Premium - Accueil client</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container-fluid" style="min-height:100vh; padding:1.5rem 2rem;">
+
+    <div class="d-flex justify-content-between align-items-start">
+        <button class="vp-btn vp-btn-green" id="btnNomCompte"><i class="bi bi-person-circle"></i> Nom de compte</button>
+        <img src="assets/logo.jpeg" class="vp-logo" alt="Voyage Premium">
+    </div>
+
+    <div class="d-flex flex-column align-items-center justify-content-center gap-4" style="min-height:55vh;">
+        <button class="vp-btn vp-btn-pink" onclick="window.location.href='historique.html'"><i class="bi bi-clock-history"></i> Historique</button>
+        <button class="vp-btn vp-btn-pink" onclick="window.location.href='4.html'"><i class="bi bi-calendar-check-fill"></i> R&eacute;server une voyage</button>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <button class="vp-btn vp-btn-orange" onclick="seDeconnecter()"><i class="bi bi-box-arrow-left"></i> Deconnexion</button>
+        <button class="vp-btn vp-btn-orange" onclick="window.location.href='4.html'">Suivant <i class="bi bi-arrow-right"></i></button>
+    </div>
+
+</div>
+
+<script src="js/api.js"></script>
+<script>
+    exigerConnexion();
+    const u = getUtilisateur();
+    if(u){ document.getElementById('btnNomCompte').textContent = `${u.prenom} ${u.nom}`; }
+</script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Voyage Premium - Gestion des vehicules</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<link href="../css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="d-flex">
+    <nav class="vp-sidebar p-3" style="width:260px;">
+        <div class="text-center mb-4">
+            <img src="../assets/logo.jpeg" class="vp-logo" style="width:110px; margin:0 auto;" alt="Voyage Premium">
+        </div>
+        <a href="dashboard.html"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a href="trajets.html"><i class="bi bi-signpost-2"></i> Gestion des trajets</a>
+        <a href="vehicules.html" class="active"><i class="bi bi-car-front"></i> Gestion des vehicules</a>
+        <a href="utilisateurs.html"><i class="bi bi-people"></i> Gestion des utilisateurs</a>
+        <a href="reservations.html"><i class="bi bi-journal-check"></i> Places reservees</a>
+        <button class="vp-btn vp-btn-orange w-100 mt-4" onclick="seDeconnecter()"><i class="bi bi-box-arrow-left"></i> Deconnexion</button>
+    </nav>
+
+    <main class="flex-fill p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="vp-title-green"><i class="bi bi-car-front-fill"></i> V&eacute;hicules</h1>
+            <button class="vp-btn vp-btn-green" data-bs-toggle="modal" data-bs-target="#modalVehicule" onclick="ouvrirAjout()"><i class="bi bi-plus-circle"></i> Ajouter un v&eacute;hicule</button>
+        </div>
+
+        <div class="vp-card">
+            <table class="table vp-table align-middle">
+                <thead><tr><th>Nom</th><th>Type</th><th>Destination</th><th>Places</th><th>Immatriculation</th><th>Statut</th><th>Actions</th></tr></thead>
+                <tbody id="corpsTableau"></tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<!-- Modal Ajout/Modification -->
+<div class="modal fade" id="modalVehicule" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content" style="border-radius:20px; font-family:'Baloo 2', sans-serif;">
+      <div class="modal-header">
+        <h5 class="modal-title" id="titreModal">Ajouter un v&eacute;hicule</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body d-flex flex-column gap-3">
+        <input type="hidden" id="vehiculeId">
+        <input type="text" class="vp-input" id="champNom" placeholder="Nom du vehicule">
+        <select class="vp-input" id="champType">
+            <option value="Standard">Standard</option>
+            <option value="Premium">Premium</option>
+        </select>
+        <input type="text" class="vp-input" id="champDestination" placeholder="Destination dediee (ex: Mahajanga)">
+        <div class="form-text mb-0" style="margin-top:-.6rem;">Ce v&eacute;hicule ne pourra &ecirc;tre utilis&eacute; que pour cette destination.</div>
+        <input type="number" class="vp-input" id="champPlaces" placeholder="Nombre de places" value="30">
+        <input type="text" class="vp-input" id="champImmatriculation" placeholder="Immatriculation">
+        <select class="vp-input" id="champStatut">
+            <option value="Disponible">Disponible</option>
+            <option value="Indisponible">Indisponible</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button class="vp-btn vp-btn-yellow" onclick="enregistrerVehicule()"><i class="bi bi-check-lg"></i> Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/admin.js"></script>
+<script>
+exigerAdmin();
+let modeEdition = false;
+
+async function chargerVehicules(){
+    try {
+        const vehicules = await appelApi('/vehicules', 'GET', null, false);
+        document.getElementById('corpsTableau').innerHTML = vehicules.map(v => `
+            <tr>
+                <td>${v.nom}</td>
+                <td><span class="${v.type === 'Premium' ? 'vp-badge-premium' : 'vp-badge-standard'}">${v.type}</span></td>
+                <td>${v.destination}</td>
+                <td>${v.nombre_places}</td>
+                <td>${v.immatriculation || '-'}</td>
+                <td>${v.statut}</td>
+                <td>
+                    <button class="vp-btn vp-btn-pink" style="padding:.3rem 1rem; font-size:.85rem;" data-bs-toggle="modal" data-bs-target="#modalVehicule"
+                        onclick='ouvrirModification(${JSON.stringify(v)})'><i class="bi bi-pencil-square"></i> Modifier</button>
+                    <button class="vp-btn vp-btn-orange" style="padding:.3rem 1rem; font-size:.85rem;" onclick="supprimerVehicule(${v.id})"><i class="bi bi-trash3"></i> Supprimer</button>
+                </td>
+            </tr>
+        `).join('');
+    } catch (erreur) {
+        afficherMessage(erreur.message, 'danger');
+    }
+}
+
+function ouvrirAjout(){
+    modeEdition = false;
+    document.getElementById('titreModal').textContent = 'Ajouter un vehicule';
+    document.getElementById('vehiculeId').value = '';
+    document.getElementById('champNom').value = '';
+    document.getElementById('champType').value = 'Standard';
+    document.getElementById('champDestination').value = '';
+    document.getElementById('champPlaces').value = 30;
+    document.getElementById('champImmatriculation').value = '';
+    document.getElementById('champStatut').value = 'Disponible';
+}
+
+function ouvrirModification(v){
+    modeEdition = true;
+    document.getElementById('titreModal').textContent = 'Modifier le vehicule';
+    document.getElementById('vehiculeId').value = v.id;
+    document.getElementById('champNom').value = v.nom;
+    document.getElementById('champType').value = v.type;
+    document.getElementById('champDestination').value = v.destination;
+    document.getElementById('champPlaces').value = v.nombre_places;
+    document.getElementById('champImmatriculation').value = v.immatriculation || '';
+    document.getElementById('champStatut').value = v.statut;
+}
+
+async function enregistrerVehicule(){
+    const id = document.getElementById('vehiculeId').value;
+    const corps = {
+        nom: document.getElementById('champNom').value.trim(),
+        type: document.getElementById('champType').value,
+        destination: document.getElementById('champDestination').value.trim(),
+        nombre_places: parseInt(document.getElementById('champPlaces').value, 10),
+        immatriculation: document.getElementById('champImmatriculation').value.trim(),
+        statut: document.getElementById('champStatut').value
+    };
+
+    try {
+        if(modeEdition){
+            await appelApi(`/vehicules/${id}`, 'PUT', corps);
+        } else {
+            await appelApi('/vehicules', 'POST', corps);
+        }
+        afficherMessage('Vehicule enregistre.');
+        bootstrap.Modal.getInstance(document.getElementById('modalVehicule')).hide();
+        chargerVehicules();
+    } catch (erreur) {
+        afficherMessage(erreur.message, 'danger');
+    }
+}
+
+async function supprimerVehicule(id){
+    if(!confirm('Supprimer ce vehicule ?')) return;
+    try {
+        await appelApi(`/vehicules/${id}`, 'DELETE');
+        afficherMessage('Vehicule supprime.');
+        chargerVehicules();
+    } catch (erreur) {
+        afficherMessage(erreur.message, 'danger');
+    }
+}
+
+chargerVehicules();
+</script>
+</body>
+</html>
