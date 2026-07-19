@@ -18,7 +18,7 @@ function seDeconnecter(){
     localStorage.removeItem('vp_utilisateur');
     sessionStorage.clear();
 
-    window.location.href = '/1.html';
+    window.location.href = '/index.html';
 }
 function estConnecte(){
     return !!getToken();

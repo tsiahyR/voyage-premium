@@ -37,7 +37,7 @@ app.use(express.static(path.join(__dirname, '..', 'frontend'), {
 
 app.get('/', (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
-    res.sendFile(path.join(__dirname, '..', 'frontend', '1.html'));
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
 });
 
 app.listen(PORT, () => {
